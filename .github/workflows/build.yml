@@ -2,7 +2,7 @@ name: Build Depth Wallpaper APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -16,11 +16,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Extract Android Project
-        run: |
-          unzip -q DepthWallpaper-Android-Project.zip
-          test -f DepthWallpaper/gradlew || true
-
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -30,18 +25,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.9'
 
-      - name: Download Required Models
+      - name: Build APK
+        run: gradle assembleDebug --no-daemon --stacktrace
         working-directory: DepthWallpaper
-        run: |
-          if [ -f download_models.sh ]; then
-            bash download_models.sh
-          fi
-
-      - name: Build Debug APK
-        working-directory: DepthWallpaper
-        run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -49,4 +37,3 @@ jobs:
           name: DepthWallpaper-APK
           path: DepthWallpaper/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 7
